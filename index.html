@@ -90,7 +90,7 @@ footer{color:var(--mut);font:500 12px 'JetBrains Mono',monospace;text-align:cent
 <div id="tip"></div>
 <main>
 <nav>
-  <a class="keep" href="#top">tohraan</a><a href="#stats">stats</a><a href="#graph">graph</a><a href="#repos">repos</a><a href="#badges">badges</a><a href="#term">terminal</a>
+  <a class="keep" href="#top">tohraan</a><a href="#stats">stats</a><a href="#graph">graph</a><a href="#repos">repos</a><a href="#wins">wins</a><a href="#badges">badges</a><a href="#term">terminal</a>
   <span class="sp"></span><button class="tbtn" id="theme" title="toggle theme (t)">◐ theme</button>
 </nav>
 
@@ -118,7 +118,8 @@ footer{color:var(--mut);font:500 12px 'JetBrains Mono',monospace;text-align:cent
 </section>
 
 <section id="graph" class="reveal">
-  <h2>contribution graph (hover me)</h2>
+  <h2>contribution graph (hover, click a day)</h2>
+  <div class="chips"><button class="chip" id="replay">▶ replay</button><span id="pick" style="color:var(--mut);font:500 12.5px 'JetBrains Mono',monospace;align-self:center">click any square</span></div>
   <div class="card" id="heat"><span class="m" style="color:var(--mut)">loading from github…</span></div>
   <p style="color:var(--mut);font-size:13px;margin-top:10px">Part of this graph is planned commit history in <a style="color:var(--blue)" href="https://github.com/tohraan/cse-lab">cse-lab</a> (real, tested code; backfilled dates). Details in the repo README.</p>
 </section>
@@ -129,8 +130,18 @@ footer{color:var(--mut);font:500 12px 'JetBrains Mono',monospace;text-align:cent
   <div class="repos" id="repolist"></div>
 </section>
 
+<section id="wins" class="reveal">
+  <h2>hackathon wins</h2>
+  <div class="ach">
+    <div class="card badge"><span class="ic">🥇</span><b>GDG Ideathon</b><span>1st place</span></div>
+    <div class="card badge"><span class="ic">🥇</span><b>ACM-W Broken Brief</b><span>1st place</span></div>
+    <div class="card badge"><span class="ic">🥈</span><b>IEEE Campus Ops</b><span>2nd place</span></div>
+    <div class="card badge"><span class="ic">🥉</span><b>Deriv AI Hackathon</b><span>3rd place · agentic AI</span></div>
+  </div>
+</section>
+
 <section id="badges" class="reveal">
-  <h2>achievements</h2>
+  <h2>github achievements</h2>
   <div class="ach">
     <div class="card badge"><span class="ic">🦈</span><b>Pull Shark</b><span>merged PRs</span></div>
     <div class="card badge"><span class="ic">🤠</span><b>YOLO</b><span>merged w/o review</span></div>
@@ -224,6 +235,7 @@ function stats(){
   for(let i=CONTRIB.length-1;i>=0;i--){if(CONTRIB[i].date>today)continue;if(CONTRIB[i].count>0)s++;else if(CONTRIB[i].date!==today)break}
   count($('#s-total'),total);count($('#s-streak'),s);count($('#s-best'),best);
 }
+$('#replay').onclick=()=>{if(CONTRIB.length)drawHeat()};
 function drawHeat(){
   const cell=13,gap=3,left=34,top=22,weeks=Math.ceil(CONTRIB.length/7)+1;
   const pal=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()==='#f6f8fa'?['#ebedf0','#9be9a8','#40c463','#30a14e','#216e39']:['#161b22','#0e4429','#006d32','#26a641','#39d353'];
@@ -241,6 +253,8 @@ function drawHeat(){
   $('#heat').onpointerover=e=>{const r=e.target.closest('.rect');if(!r)return;tip.textContent=`${r.dataset.c} contribution${r.dataset.c==1?'':'s'} · ${r.dataset.d}`;tip.style.opacity=1};
   $('#heat').onpointermove=e=>{tip.style.left=e.clientX+14+'px';tip.style.top=e.clientY-34+'px'};
   $('#heat').onpointerout=()=>tip.style.opacity=0;
+  $('#heat').onclick=e=>{const r=e.target.closest('.rect');if(!r)return;document.querySelectorAll('.rect').forEach(x=>x.style.stroke='');r.style.stroke='#fff';r.style.strokeWidth=2;
+    $('#pick').innerHTML=`${r.dataset.d}: <b style="color:var(--fg)">${r.dataset.c}</b> contribution${r.dataset.c==1?'':'s'} · <a style="color:var(--blue)" target="_blank" rel="noopener" href="https://github.com/search?q=author%3A${U}+author-date%3A${r.dataset.d}&type=commits">see that day's commits ↗</a>`};
 }
 
 const LC={Python:'#3572A5',TypeScript:'#3178c6',JavaScript:'#f1e05a',HTML:'#e34c26',CSS:'#563d7c',Shell:'#89e051',Swift:'#F05138'};
@@ -265,14 +279,16 @@ const CMD={
   <span class="c">stack</span>      what I build with
   <span class="c">projects</span>   repos from the GitHub API
   <span class="c">stats</span>      live numbers
+  <span class="c">wins</span>       hackathon results
   <span class="c">badges</span>     achievements
   <span class="c">neofetch</span>   system card
   <span class="c">theme</span>      toggle light/dark
   <span class="c">matrix</span>     you know what this does
   <span class="c">clear</span>      clear the screen
   <span class="m">hint: there are a few hidden ones.</span>`),
-  about:()=>P(`Tohraan Khan · Computer Science @ BITS Pilani Dubai.
-I build full-stack products, automation pipelines and programmatic video.`),
+  about:()=>P(`Tohraan Khan · founder @ Triaxon Automation · CS @ BITS Pilani Dubai.
+I build full-stack products, automation pipelines and programmatic video.
+Hackathon wins: GDG Ideathon 1st, ACM-W Broken Brief 1st, IEEE Campus Ops 2nd, Deriv AI 3rd.`),
   stack:()=>P(`<span class="b">web</span>    TypeScript, React 19, Next.js 16, Node, Express, Tailwind v4
 <span class="b">data</span>   PostgreSQL, Supabase (Auth, RLS, Realtime)
 <span class="b">infra</span>  Docker, n8n (self-hosted), Tailscale Funnel, Vercel
@@ -281,6 +297,7 @@ I build full-stack products, automation pipelines and programmatic video.`),
   projects:()=>REPOS.length?REPOS.slice(0,8).forEach(r=>P(`<span class="b">${r.name.padEnd(18)}</span> ${r.description?r.description.slice(0,60):''}`)):P('still loading, try again','m'),
   stats:()=>P(USER?`repos ${USER.public_repos} · followers ${USER.followers} · contributions/yr ${$('#s-total').textContent} · streak ${$('#s-streak').textContent}`:'still loading','m'),
   badges:()=>P(`🦈 Pull Shark   🤠 YOLO   ⚡ Quickdraw`),
+  wins:()=>P(`<span class="c">1st</span>  GDG Ideathon\n<span class="c">1st</span>  ACM-W Broken Brief\n<span class="c">2nd</span>  IEEE Campus Ops\n<span class="c">3rd</span>  Deriv AI Hackathon (agentic AI)`),
   neofetch:()=>P(`<span class="c">guest</span>@<span class="c">tohraan</span>
 <span class="m">--------------</span>
 <span class="c">OS</span>      macOS
