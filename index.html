@@ -126,7 +126,7 @@ footer{color:var(--mut);font:500 12px 'JetBrains Mono',monospace;text-align:cent
 <section id="repos" class="reveal">
   <h2>repos</h2>
   <div class="chips" id="chips"></div>
-  <div class="repos" id="repos"></div>
+  <div class="repos" id="repolist"></div>
 </section>
 
 <section id="badges" class="reveal">
@@ -215,8 +215,8 @@ addEventListener('keydown',e=>{if(e.key==='t'&&!/input|textarea/i.test(e.target.
 let USER=null,REPOS=[],CONTRIB=[];
 function count(el,to){const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/900);el.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
 fetch(`https://api.github.com/users/${U}`).then(r=>r.json()).then(u=>{USER=u;document.querySelectorAll('[data-k]').forEach(e=>count(e,u[e.dataset.k]||0))}).catch(()=>{});
-fetch(`https://api.github.com/users/${U}/repos?per_page=100&sort=pushed`).then(r=>r.json()).then(rs=>{REPOS=rs.filter(r=>!r.fork);drawRepos('all')}).catch(()=>{$('#repos').textContent='could not reach the GitHub API'});
-fetch(`https://github-contributions-api.jogruber.de/v1/${U}?y=last`).then(r=>r.json()).then(d=>{CONTRIB=d.contributions;drawHeat();stats()}).catch(()=>{$('#heat').textContent='could not load the contribution graph'});
+fetch(`https://api.github.com/users/${U}/repos?per_page=100&sort=pushed`).then(r=>r.json()).then(rs=>{REPOS=rs.filter(r=>!r.fork);drawRepos('all')}).catch(()=>{$('#repolist').textContent='could not reach the GitHub API'});
+fetch(`https://raw.githubusercontent.com/${U}/${U}/main/data/contributions.json`).then(r=>r.json()).then(d=>{CONTRIB=d.days;drawHeat();stats()}).catch(()=>{$('#heat').textContent='could not load the contribution graph'});
 
 function stats(){
   const total=CONTRIB.reduce((a,d)=>a+d.count,0),best=Math.max(...CONTRIB.map(d=>d.count));
@@ -249,7 +249,7 @@ function drawRepos(f){
   $('#chips').innerHTML=langs.map(l=>`<button class="chip ${l===f?'on':''}" data-l="${l}">${l}</button>`).join('');
   $('#chips').onclick=e=>{const b=e.target.closest('.chip');if(b)drawRepos(b.dataset.l)};
   const list=REPOS.filter(r=>f==='all'||r.language===f);
-  $('#repos').innerHTML=list.map(r=>`<a class="card repo" href="${r.html_url}" target="_blank" rel="noopener"><h3>${r.name}</h3><p>${(r.description||'No description yet').replace(/</g,'&lt;')}</p><div class="meta">${r.language?`<span><i class="dot" style="background:${LC[r.language]||'#8b9bb0'}"></i>${r.language}</span>`:''}<span>★ ${r.stargazers_count}</span><span>updated ${new Date(r.pushed_at).toLocaleDateString('en',{month:'short',day:'numeric'})}</span></div></a>`).join('');
+  $('#repolist').innerHTML=list.map(r=>`<a class="card repo" href="${r.html_url}" target="_blank" rel="noopener"><h3>${r.name}</h3><p>${(r.description||'No description yet').replace(/</g,'&lt;')}</p><div class="meta">${r.language?`<span><i class="dot" style="background:${LC[r.language]||'#8b9bb0'}"></i>${r.language}</span>`:''}<span>★ ${r.stargazers_count}</span><span>updated ${new Date(r.pushed_at).toLocaleDateString('en',{month:'short',day:'numeric'})}</span></div></a>`).join('');
   document.querySelectorAll('.repo').forEach(c=>{
     c.onpointermove=e=>{const b=c.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;c.style.transform=`perspective(700px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-3px)`};
     c.onpointerleave=()=>c.style.transform='';
